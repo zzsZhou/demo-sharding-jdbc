@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.GroupMapper">
+  <resultMap id="BaseResultMap" type="com.example.demo.model.dao.Group">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="user_number" jdbcType="INTEGER" property="userNumber" />
+  </resultMap>
+
+  <sql id="baseColumn">
+    id as id,
+    name as name,
+    user_number as userNumber
+  </sql>
+
+  <select id="selectGroupsById" resultType="com.example.demo.model.dao.Group">
+    select <include refid="baseColumn"/>
+    from group_info
+    where id >= #{beginId}
+    and <![CDATA[ id <= #{endId}]]>
+    order by id
+  </select>
+
+</mapper>

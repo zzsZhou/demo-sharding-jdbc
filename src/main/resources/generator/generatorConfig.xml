@@ -45,7 +45,17 @@
 
 
 
-        <table tableName="user_info_0" domainObjectName="User">
+<!--        <table tableName="user_info_0" domainObjectName="User">
+            <generatedKey column="id" sqlStatement="JDBC"/>
+        </table>-->
+
+<!--
+        <table tableName="company_info" domainObjectName="Company">
+            <generatedKey column="id" sqlStatement="JDBC"/>
+        </table>
+-->
+
+        <table tableName="group_info_0" domainObjectName="Group">
             <generatedKey column="id" sqlStatement="JDBC"/>
         </table>
 

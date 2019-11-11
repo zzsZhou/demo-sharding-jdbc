@@ -18,6 +18,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,9 +47,11 @@ public class ShardingDataSourceConfig {
     DataSource getShardingDataSource() throws SQLException {
         ShardingRuleConfiguration shardingRuleConfig = new ShardingRuleConfiguration();
         shardingRuleConfig.getTableRuleConfigs().add(getUserTableRuleConfiguration());
+        shardingRuleConfig.getTableRuleConfigs().add(getGroupTableRuleConfiguration());
         shardingRuleConfig.getBindingTableGroups().add("user_info");
+        shardingRuleConfig.getBindingTableGroups().add("group_info");
         shardingRuleConfig.setDefaultDatabaseShardingStrategyConfig(new StandardShardingStrategyConfiguration("group_id", DatabaseShardingAlgorithm.class.getName()));
-        shardingRuleConfig.setDefaultTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("user_id", TableShardingAlgorithm.class.getName()));
+        //shardingRuleConfig.setDefaultTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("user_id", TableShardingAlgorithm.class.getName()));
         return new ShardingDataSource(shardingRuleConfig.build(createDataSourceMap()));
     }
 
@@ -64,9 +67,36 @@ public class ShardingDataSourceConfig {
         orderTableRuleConfig.setLogicTable("user_info");
         orderTableRuleConfig.setActualDataNodes("user_${0..1}.user_info_${0..1}");
         orderTableRuleConfig.setKeyGeneratorColumnName("user_id");
+        orderTableRuleConfig.setTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("user_id", TableShardingAlgorithm.class.getName()));
         return orderTableRuleConfig;
     }
 
+    /**
+     * 设置表的node
+     *
+     * @return
+     */
+    @Bean
+    TableRuleConfiguration getGroupTableRuleConfiguration() {
+        TableRuleConfiguration orderTableRuleConfig = new TableRuleConfiguration();
+        orderTableRuleConfig.setLogicTable("group_info");
+        orderTableRuleConfig.setActualDataNodes("user_${0..1}.group_info_${0..1}");
+        orderTableRuleConfig.setKeyGeneratorColumnName("id");
+        orderTableRuleConfig.setTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("id", TableShardingAlgorithm.class.getName()));
+        return orderTableRuleConfig;
+    }
+
+    /**
+     * 设置数据源
+     *
+     * @return
+     */
+    private Map<String, DataSource> createDataSourceMap() {
+        Map<String, DataSource> result = new HashMap<>();
+        result.put(dataSource0Config.getDatabaseName(), dataSource0Config.getDataSource());
+        result.put(dataSource1Config.getDatabaseName(), dataSource1Config.getDataSource());
+        return result;
+    }
 
     /**
      * 需要手动配置事务管理器
@@ -94,12 +124,6 @@ public class ShardingDataSourceConfig {
         return new SqlSessionTemplate(sqlSessionFactory);
     }
 
-    private Map<String, DataSource> createDataSourceMap() {
-        Map<String, DataSource> result = new HashMap<>();
-        result.put(dataSource0Config.getDatabaseName(), dataSource0Config.getDataSource());
-        result.put(dataSource1Config.getDatabaseName(), dataSource1Config.getDataSource());
-        return result;
-    }
 
     private DataSource createDataSource(final String dataSourceName) {
         DruidDataSource datasource = new DruidDataSource();
